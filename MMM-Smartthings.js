@@ -6,7 +6,7 @@
  * By BuzzKC
  * MIT Licensed.
  */
-
+ 
 Module.register("MMM-Smartthings", {
 	defaults: {
 		updateInterval: 60000,

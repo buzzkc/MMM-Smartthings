@@ -4,7 +4,7 @@
  * By BuzzKC
  * MIT Licensed.
  */
-
+ 
 var NodeHelper = require("node_helper");
 const smartthings = require("smartthings-node");
 let st = new smartthings.SmartThings(this.config.personalAccessToken);
