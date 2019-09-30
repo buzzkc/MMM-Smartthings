@@ -48,6 +48,7 @@ module.exports = NodeHelper.create({
 			this.st = new smartthings.SmartThings(this.config.personalAccessToken);
 		}
 
+		
 		if (notification === "GET_DEVICES") {
 			this.st.devices.listDevicesByCapability(capability).then(deviceList => {
 					this.sendSocketNotification('DEVICES_FOUND', deviceList);
