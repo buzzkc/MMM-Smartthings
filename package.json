@@ -5,6 +5,9 @@
   "main": "MMM-Smartthings.js",
   "author": "BuzzKC",
   "license": "MIT",
+  "dependencies": {
+    "smartthings-node": "0.0.4"
+  },
   "devDependencies": {
     "grunt": "latest",
     "grunt-eslint": "latest",

@@ -26,3 +26,6 @@ var config = {
 |----------------- |-----------
 | `option1`        | *Required* DESCRIPTION HERE
 | `option2`        | *Optional* DESCRIPTION HERE TOO <br><br>**Type:** `int`(milliseconds) <br>Default 60000 milliseconds (1 minute)
+
+
+https://docs.smartthings.com/en/latest/capabilities-reference.html

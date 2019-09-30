@@ -4,10 +4,13 @@
  * By BuzzKC
  * MIT Licensed.
  */
- 
+
 var NodeHelper = require("node_helper");
 const smartthings = require("smartthings-node");
-let st = new smartthings.SmartThings(this.config.personalAccessToken);
+let st;
+let config;
+//var device;
+var capability = 'switch';
 
 /*
 "capability.switch"
@@ -38,15 +41,65 @@ module.exports = NodeHelper.create({
 	 * argument payload mixed - The payload of the notification.
 	 */
 	socketNotificationReceived: function(notification, payload) {
-		if (notification === "MMM-Smartthings-NOTIFICATION_TEST") {
-			console.log("Working notification system. Notification:", notification, "payload: ", payload);
-			// Send notification
-			//this.sendNotificationTest(this.anotherFunction()); //Is possible send objects :)
-			st.devices.listDevicesByCapability('switch')
-				.then(deviceList => {
-					console.log(deviceList);
-					this.sendSocketNotification('SENSORS_CHANGED', deviceList);
-				})
+		//console.log("Smartthings socket received");
+
+		if (notification === 'SEND_CONFIG') {
+			this.config = payload;
+			this.st = new smartthings.SmartThings(this.config.personalAccessToken);
+		}
+
+		if (notification === "GET_DEVICES") {
+			this.st.devices.listDevicesByCapability(capability).then(deviceList => {
+					this.sendSocketNotification('DEVICES_FOUND', deviceList);
+				}
+			);
+		}
+
+		if (notification === "GET_DEVICE_STATUS") {
+			var device = payload;
+			//this.sendSocketNotification('ConsoleOutput', device.deviceId);
+
+			this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
+				var deviceStatuses = {
+					"id": device.deviceId,
+					"label": device.label,
+					"deviceTypeName": device.deviceTypeName,
+					"capability": capability,
+					"status": deviceStatus.switch.value //todo - needs to use capability variable
+				};
+
+				if (device.deviceTypeName !=="Sense Energy Device") {
+					//this.sendSocketNotification('ConsoleOutput', device.deviceId);
+					this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
+				}
+
+			}).bind(device);
+		}
+
+
+		if (notification === "GET_DEVICES_LOOP") {
+
+			this.st.devices.listDevicesByCapability(capability).then(deviceList => {
+					//this.sendSocketNotification('ConsoleOutput', deviceList);
+					for (var i = 0; i < deviceList.items.length; i++) {
+						var device = deviceList.items[i];
+						//this.sendSocketNotification('ConsoleOutput', device.deviceId);
+
+						this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
+							var deviceStatuses = {
+								"id": device.deviceId,
+								"label": device.label,
+								"deviceTypeName": device.deviceTypeName,
+								"capability": capability,
+								"status": deviceStatus.switch.value //todo - needs to use capability variable
+							};
+							//this.sendSocketNotification('ConsoleOutput', device.deviceId);
+							this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
+						}).bind(device);
+
+					}
+				}
+			);
 		}
 	},
 

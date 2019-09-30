@@ -6,7 +6,7 @@
  * By BuzzKC
  * MIT Licensed.
  */
- 
+
 Module.register("MMM-Smartthings", {
 	defaults: {
 		updateInterval: 60000,
@@ -23,12 +23,22 @@ Module.register("MMM-Smartthings", {
 
 		//Flag for check if module is loaded
 		this.loaded = false;
-		this.sendSocketNotification("MMM-Smartthings-NOTIFICATION_TEST", null);
+		this.sendConfig();
+
+		console.log("Smartthings - send socket notification");
+		this.sendSocketNotification("GET_DEVICES", null);
 		// Schedule update timer.
-		//this.getData();
-		//setInterval(function() {
-		//	self.updateDom();
-		//}, this.config.updateInterval);
+/*
+		this.getData();
+		setInterval(function() {
+			self.updateDom();
+		}, this.config.updateInterval);
+*/
+	},
+
+	sendConfig: function() {
+		Log.info(`[${this.name}]: SEND_CONFIG`, this.config);
+		this.sendSocketNotification('SEND_CONFIG', this.config);
 	},
 
 	/*
@@ -156,5 +166,36 @@ Module.register("MMM-Smartthings", {
 			this.dataNotification = payload;
 			this.updateDom();
 		}
-	},
+
+		if(notification === "SENSORS_CHANGED") {
+			// set dataNotification
+			console.log(payload);
+			for (var i = 0; i < payload.length; i++) {
+				console.log(payload[i].id);
+			}
+		}
+
+		if(notification === "DEVICES_FOUND") {
+			var me = this;
+			// set dataNotification
+			//console.log(payload);
+			for (var i = 0; i < payload.items.length; i++) {
+				//console.log(payload.items[i]);
+				me.sendSocketNotification("GET_DEVICE_STATUS", payload.items[i]);
+			}
+		}
+
+		if(notification === "DEVICE_STATUS_FOUND") {
+			// set dataNotification
+			console.log(payload);
+			//for (var i = 0; i < payload.length; i++) {
+				//console.log(payload);
+			//}
+		}
+
+		if (notification === "ConsoleOutput") {
+			console.log("OUTPUT_LOG:");
+			console.log(payload);
+		}
+	}
 });
