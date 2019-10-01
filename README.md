@@ -6,7 +6,7 @@ MagicMirror module that connects to the Smartthings api to display device status
 
 ## Example
 
-![](images/MMM-Smartthings.png)
+![](./images/MMM-Smarthings.png)
 
 ## Dependencies
 
