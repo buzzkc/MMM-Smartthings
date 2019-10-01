@@ -66,5 +66,5 @@ var config = {
 
 ## Thanks To
 * MichMich for developing [MagicMirror<sup>2</sup>](https://github.com/MichMich/MagicMirror)
-* To the following for feedback and support 1sdetweil, cowboydude, & johnnyboy
+* To the following for feedback and support sdetweil, cowboydude, & johnnyboy
 * Examples on aduyng's [MMM-IOTStatus project:](https://github.com/aduyng/MMM-IOTStatus)
