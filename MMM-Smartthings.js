@@ -12,30 +12,37 @@ Module.register("MMM-Smartthings", {
 
 	defaults: {
 		updateInterval: 10000,
-		retryDelay: 5000,
 		personalAccessToken: '', //setup personal access token at https://account.smartthings.com/tokens,
 		capabilities: [],
 		title: 'Devices'
 	},
 
+	/*
+		Capabilities statuses implemented:
+		"switch"
+		"contactSensor"
+		"lock"
+		"temperatureMeasurement"
+		"relativeHumidityMeasurement"
+		"motionSensor"
+
+		Other capabilities reference: https://docs.smartthings.com/en/latest/capabilities-reference.html
+	 */
+
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
 	start: function() {
-		var self = this;
-		var dataRequest = null;
-		var dataNotification = null;
+		let self = this;
 
 		//Flag for check if module is loaded
 		this.loaded = false;
 		this.sendConfig();
-
-		console.log("Smartthings - send socket notification");
-		this.sendSocketNotification("GET_DEVICES", null);
+		this.getData();
 		// Schedule update timer.
-
-		//this.getData();
 		setInterval(function() {
 			self.updateDom();
+			self.deviceStatuses = [];
+			self.getData();
 		}, this.config.updateInterval);
 
 	},
@@ -52,34 +59,8 @@ Module.register("MMM-Smartthings", {
 	 *
 	 */
 	getData: function() {
-		var self = this;
-
-		//send socket notification to node_helper to initialize and return data.
-
-		var urlApi = "https://jsonplaceholder.typicode.com/posts/1";
-		var retry = true;
-
-		var dataRequest = new XMLHttpRequest();
-		dataRequest.open("GET", urlApi, true);
-		dataRequest.onreadystatechange = function() {
-			console.log(this.readyState);
-			if (this.readyState === 4) {
-				console.log(this.status);
-				if (this.status === 200) {
-					self.processData(JSON.parse(this.response));
-				} else if (this.status === 401) {
-					self.updateDom(self.config.animationSpeed);
-					Log.error(self.name, this.status);
-					retry = false;
-				} else {
-					Log.error(self.name, "Could not load data.");
-				}
-				if (retry) {
-					self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
-				}
-			}
-		};
-		dataRequest.send();
+		Log.info(`[${this.name}]: GET_DEVICES`, null);
+		this.sendSocketNotification("GET_DEVICES", null);
 	},
 
 
@@ -90,14 +71,17 @@ Module.register("MMM-Smartthings", {
 	 *  If empty, this.config.updateInterval is used.
 	 */
 	scheduleUpdate: function(delay) {
-		var nextLoad = this.config.updateInterval;
+		let nextLoad = this.config.updateInterval;
 		if (typeof delay !== "undefined" && delay >= 0) {
 			nextLoad = delay;
 		}
 		nextLoad = nextLoad ;
-		var self = this;
+		let self = this;
 		setTimeout(function() {
+			console.log("Scheduled update running");
+			self.deviceStatuses = [];
 			self.getData();
+
 		}, nextLoad);
 	},
 
@@ -108,34 +92,38 @@ Module.register("MMM-Smartthings", {
 				'<div class="loading"><span class="zmdi zmdi-rotate-right zmdi-hc-spin"></span> Loading...</div>';
 			return wrapper;
 		}
-		const sensorKeys = Object.keys(this.deviceStatuses) || [];
+
+		this.deviceStatuses = this.deviceStatuses.sort(this.compareDeviceNames); //sort device names
+		this.deviceStatuses = this.deviceStatuses.sort(this.compareDeviceTypes); //sort by device types
+
+		const deviceKeys = Object.keys(this.deviceStatuses) || [];
 		wrapper.innerHTML = `
       <h2 class="title">${this.config.title}</h2>
       <ul class="sensors">
-        ${sensorKeys
+        ${deviceKeys
 			.map(sensorKey => {
-				const sensor = this.deviceStatuses[sensorKey];
+				const device = this.deviceStatuses[sensorKey];
 				let iconClass = 'zmdi';
 				let rowClass = '';
-				if (sensor.value === 'locked' || sensor.value === 'closed') {
+				if (device.value === 'locked' || device.value === 'closed') {
 					iconClass = `${iconClass} zmdi-lock`;
 					rowClass = `${rowClass} ok`;
-				} else if (sensor.value === 'unlocked' || sensor.value === 'open') {
+				} else if (device.value === 'unlocked' || device.value === 'open') {
 					iconClass = `${iconClass} zmdi-lock-open`;
 					rowClass = `${rowClass} error`;
-				} else if (sensor.value === 'on') {
+				} else if (device.value === 'on') {
 					iconClass = `${iconClass} zmdi-power`;
 					rowClass = `${rowClass} error`;
-				} else if (sensor.value === 'off') {
+				} else if (device.value === 'off') {
 					iconClass = `${iconClass} zmdi-minus-circle-outline`;
 					rowClass = `${rowClass} ok`;
 				}
 				return `
                 <li class="sensor ${rowClass}">
-                  <span class="sensor-icon ${sensor.deviceType}"></span>
-                  <span class="sensor-name">${sensor.deviceName}</span>
+                  <span class="sensor-icon ${device.deviceType}"></span>
+                  <span class="sensor-name">${device.deviceName}</span>
                   <span class="sensor-status-icon ${iconClass}"></span>
-                  <span class="sensor-status-name">${sensor.value}</span>
+                  <span class="sensor-status-name">${device.value}</span>
                 </li>
             `;
 			})
@@ -143,6 +131,34 @@ Module.register("MMM-Smartthings", {
 		  </ul>
 		`;
 		return wrapper;
+	},
+
+	compareDeviceNames: function (a, b) {
+		// Use toUpperCase() to ignore character casing
+		const deviceNameA = a.deviceName.toUpperCase();
+		const deviceNameB = b.deviceName.toUpperCase();
+
+		let comparison = 0;
+		if (deviceNameA > deviceNameB) {
+			comparison = 1;
+		} else if (deviceNameA < deviceNameB) {
+			comparison = -1;
+		}
+		return comparison;
+	},
+
+	compareDeviceTypes: function (a, b) {
+		// Use toUpperCase() to ignore character casing
+		const deviceTypeA = a.deviceType.toUpperCase();
+		const deviceTypeB = b.deviceType.toUpperCase();
+
+		let comparison = 0;
+		if (deviceTypeA > deviceTypeB) {
+			comparison = 1;
+		} else if (deviceTypeA < deviceTypeB) {
+			comparison = -1;
+		}
+		return comparison;
 	},
 
 	getScripts: function() {
@@ -167,43 +183,8 @@ Module.register("MMM-Smartthings", {
 		};
 	},
 
-	processData: function(data) {
-		var self = this;
-		this.dataRequest = data;
-		if (this.loaded === false) { self.updateDom(self.config.animationSpeed) ; }
-		this.loaded = true;
-
-		// the data if load
-		// send notification to helper
-		this.sendSocketNotification("MMM-Smartthings-NOTIFICATION_TEST", data);
-	},
-
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
-		if(notification === "MMM-Smartthings-NOTIFICATION_TEST") {
-			// set dataNotification
-			this.dataNotification = payload;
-			this.updateDom();
-		}
-
-		if(notification === "SENSORS_CHANGED") {
-			// set dataNotification
-			console.log(payload);
-			for (var i = 0; i < payload.length; i++) {
-				console.log(payload[i].id);
-			}
-		}
-
-		if(notification === "DEVICES_FOUND") {
-			var me = this;
-			// set dataNotification
-			//console.log(payload);
-			for (var i = 0; i < payload.items.length; i++) {
-				//console.log(payload.items[i]);
-				me.sendSocketNotification("GET_DEVICE_STATUS", payload.items[i]);
-			}
-		}
-
 		if(notification === "DEVICE_STATUS_FOUND") {
 			// set dataNotification
 			console.log(payload);
@@ -215,6 +196,7 @@ Module.register("MMM-Smartthings", {
 
 		}
 
+		//messages to display in console from node_helper and other backend processes.
 		if (notification === "ConsoleOutput") {
 			console.log("OUTPUT_LOG:");
 			console.log(payload);

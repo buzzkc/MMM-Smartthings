@@ -9,40 +9,24 @@ var NodeHelper = require("node_helper");
 const smartthings = require("smartthings-node");
 let st;
 let config;
-//var device;
-var capabilities = null;
+let capabilities = null;
 
 /*
-"capability.switch"
-"capability.switchLevel"
-"capability.thermostat"
-"capability.motionSensor"
-"capability.accelerationSensor"
-"capability.contactSensor"
-"capability.illuminanceMeasurement"
-"capability.temperatureMeasurement"
-"capability.relativeHumidityMeasurement"
-"capability.presenceSensor"
-"capability.lock"
-"capability.battery"
-"capability.powerMeter"
-"capability.energyMeter"
- */
+	Capabilities statuses implemented:
+	"switch"
+	"contactSensor"
+	"lock"
+	"temperatureMeasurement"
+	"relativeHumidityMeasurement"
+	"motionSensor"
+
+	Other capabilities reference: https://docs.smartthings.com/en/latest/capabilities-reference.html
+*/
 
 
 module.exports = NodeHelper.create({
 
-	// Override socketNotificationReceived method.
-
-	/* socketNotificationReceived(notification, payload)
-	 * This method is called when a socket notification arrives.
-	 *
-	 * argument notification string - The identifier of the noitication.
-	 * argument payload mixed - The payload of the notification.
-	 */
 	socketNotificationReceived: function(notification, payload) {
-		//console.log("Smartthings socket received");
-
 		if (notification === 'SEND_CONFIG') {
 			this.config = payload;
 			this.st = new smartthings.SmartThings(this.config.personalAccessToken);
@@ -51,8 +35,8 @@ module.exports = NodeHelper.create({
 
 		//This doesn't work as I'm unable to get device passed to the promise that gets the status. The last device looped is used for all statuses
 		if (notification === "GET_DEVICES") {
-			for (var i = 0; i < capabilities.length; i++) {
-				var capability = capabilities[i];
+			for (let i = 0; i < capabilities.length; i++) {
+				let capability = capabilities[i];
 				this.getDevicesByCapability(capability);
 			}
 		}
@@ -61,8 +45,8 @@ module.exports = NodeHelper.create({
 	getDevicesByCapability: function(capability) {
 		this.st.devices.listDevicesByCapability(capability).then(deviceList => {
 				//this.sendSocketNotification('ConsoleOutput', deviceList);
-				for (var i = 0; i < deviceList.items.length; i++) {
-					var device = deviceList.items[i];
+				for (let i = 0; i < deviceList.items.length; i++) {
+					let device = deviceList.items[i];
 					//this.sendSocketNotification('ConsoleOutput', device.deviceId);
 					this.getDeviceStatus(device, capability);
 				}
@@ -74,7 +58,7 @@ module.exports = NodeHelper.create({
 		this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
 			//this.sendSocketNotification('ConsoleOutput', device);
 
-			var statusType = null;
+			let statusType = null;
 			switch (capability) {
 				case 'switch':
 					statusType = deviceStatus.switch.value;
@@ -85,9 +69,19 @@ module.exports = NodeHelper.create({
 				case 'lock':
 					statusType = deviceStatus.lock.value;
 					break;
+				case 'temperatureMeasurement':
+					statusType = deviceStatus.temperature.value;
+					break;
+				case 'relativeHumidityMeasurement':
+					statusType = deviceStatus.humidity.value;
+					break;
+				case 'motionSensor':
+					statusType = deviceStatus.motion.value;
+					break;
+
 			}
-			if (!device.deviceTypeName.startsWith("Sense ")) {
-				var deviceStatuses = {
+			if (!device.deviceTypeName.startsWith("Sense ")) { //filter out virtual devices created for Sense
+				let deviceStatuses = {
 					"id": device.deviceId,
 					"deviceName": device.label,
 					"deviceTypeNAME": device.deviceTypeName,
@@ -99,25 +93,5 @@ module.exports = NodeHelper.create({
 				this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
 			}
 		});
-	},
-
-	// Example function send notification test
-	sendNotificationTest: function(payload) {
-		this.sendSocketNotification("MMM-Smartthings-NOTIFICATION_TEST", payload);
-	},
-
-	// this you can create extra routes for your module
-	extraRoutes: function() {
-		var self = this;
-		this.expressApp.get("/MMM-Smartthings/extra_route", function(req, res) {
-			// call another function
-			values = self.anotherFunction();
-			res.send(values);
-		});
-	},
-
-	// Test another function
-	anotherFunction: function() {
-		return {date: new Date()};
 	}
 });
