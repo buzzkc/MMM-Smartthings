@@ -30,17 +30,17 @@ To use this module, add the following configuration block to the modules array i
 var config = {
     modules: [
         {
-            module: "MMM-Smartthings",
-                  position: "top_left",
-                  header: "Smartthings",
-                  config: {
-                    personalAccessToken: '<your_smarthings_api_key>',
-                    capabilities: [
-                        'contactSensor',
-                        'lock'
-                    ],
-                    title: "Doors & Locks"
-                  }
+              module: "MMM-Smartthings",
+              position: "top_left",
+              header: "Smartthings",
+              config: {
+                personalAccessToken: '<your_smarthings_api_key>',
+                capabilities: [
+                    'contactSensor',
+                    'lock'
+                ],
+                title: "Doors & Locks"
+              }
         }
     ]
 }
