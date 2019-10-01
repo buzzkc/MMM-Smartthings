@@ -86,17 +86,18 @@ module.exports = NodeHelper.create({
 					statusType = deviceStatus.lock.value;
 					break;
 			}
+			if (!device.deviceTypeName.startsWith("Sense ")) {
+				var deviceStatuses = {
+					"id": device.deviceId,
+					"deviceName": device.label,
+					"deviceTypeNAME": device.deviceTypeName,
+					"deviceType": capability,
+					"value": statusType
+				};
 
-			var deviceStatuses = {
-				"id": device.deviceId,
-				"label": device.label,
-				"deviceTypeName": device.deviceTypeName,
-				"capability": capability,
-				"status": statusType
-			};
-
-			//this.sendSocketNotification('ConsoleOutput', device.deviceId);
-			this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
+				//this.sendSocketNotification('ConsoleOutput', device.deviceId);
+				this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
+			}
 		});
 	},
 

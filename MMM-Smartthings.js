@@ -11,10 +11,11 @@ Module.register("MMM-Smartthings", {
 	deviceStatuses: [],
 
 	defaults: {
-		updateInterval: 60000,
+		updateInterval: 10000,
 		retryDelay: 5000,
 		personalAccessToken: '', //setup personal access token at https://account.smartthings.com/tokens,
-		capabilities: []
+		capabilities: [],
+		title: 'Devices'
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -31,12 +32,12 @@ Module.register("MMM-Smartthings", {
 		console.log("Smartthings - send socket notification");
 		this.sendSocketNotification("GET_DEVICES", null);
 		// Schedule update timer.
-/*
-		this.getData();
+
+		//this.getData();
 		setInterval(function() {
 			self.updateDom();
 		}, this.config.updateInterval);
-*/
+
 	},
 
 	sendConfig: function() {
@@ -101,43 +102,58 @@ Module.register("MMM-Smartthings", {
 	},
 
 	getDom: function() {
-		var self = this;
-
-		// create element wrapper for show into the module
-		var wrapper = document.createElement("div");
-		// If this.dataRequest is not empty
-		if (this.dataRequest) {
-			var wrapperDataRequest = document.createElement("div");
-			// check format https://jsonplaceholder.typicode.com/posts/1
-			wrapperDataRequest.innerHTML = this.dataRequest.title;
-
-			var labelDataRequest = document.createElement("label");
-			// Use translate function
-			//             this id defined in translations files
-			labelDataRequest.innerHTML = this.translate("TITLE");
-
-
-			wrapper.appendChild(labelDataRequest);
-			wrapper.appendChild(wrapperDataRequest);
+		const wrapper = document.createElement('div');
+		if (this.deviceStatuses === null) {
+			wrapper.innerHTML =
+				'<div class="loading"><span class="zmdi zmdi-rotate-right zmdi-hc-spin"></span> Loading...</div>';
+			return wrapper;
 		}
-
-		// Data from helper
-		if (this.dataNotification) {
-			var wrapperDataNotification = document.createElement("div");
-			// translations  + datanotification
-			wrapperDataNotification.innerHTML =  this.translate("UPDATE") + ": " + this.dataNotification.date;
-
-			wrapper.appendChild(wrapperDataNotification);
-		}
+		const sensorKeys = Object.keys(this.deviceStatuses) || [];
+		wrapper.innerHTML = `
+      <h2 class="title">${this.config.title}</h2>
+      <ul class="sensors">
+        ${sensorKeys
+			.map(sensorKey => {
+				const sensor = this.deviceStatuses[sensorKey];
+				let iconClass = 'zmdi';
+				let rowClass = '';
+				if (sensor.value === 'locked' || sensor.value === 'closed') {
+					iconClass = `${iconClass} zmdi-lock`;
+					rowClass = `${rowClass} ok`;
+				} else if (sensor.value === 'unlocked' || sensor.value === 'open') {
+					iconClass = `${iconClass} zmdi-lock-open`;
+					rowClass = `${rowClass} error`;
+				} else if (sensor.value === 'on') {
+					iconClass = `${iconClass} zmdi-power`;
+					rowClass = `${rowClass} error`;
+				} else if (sensor.value === 'off') {
+					iconClass = `${iconClass} zmdi-minus-circle-outline`;
+					rowClass = `${rowClass} ok`;
+				}
+				return `
+                <li class="sensor ${rowClass}">
+                  <span class="sensor-icon ${sensor.deviceType}"></span>
+                  <span class="sensor-name">${sensor.deviceName}</span>
+                  <span class="sensor-status-icon ${iconClass}"></span>
+                  <span class="sensor-status-name">${sensor.value}</span>
+                </li>
+            `;
+			})
+			.join('')}
+		  </ul>
+		`;
 		return wrapper;
 	},
 
 	getScripts: function() {
-		return [];
+		return [
+			'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js',
+		];
 	},
 
 	getStyles: function () {
 		return [
+			'https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css',
 			"MMM-Smartthings.css",
 		];
 	},
@@ -190,12 +206,13 @@ Module.register("MMM-Smartthings", {
 
 		if(notification === "DEVICE_STATUS_FOUND") {
 			// set dataNotification
-			//console.log(payload);
+			console.log(payload);
 			this.deviceStatuses.push(payload);
-			console.log(this.deviceStatuses);
+			//console.log(this.deviceStatuses);
 			//for (var i = 0; i < payload.length; i++) {
 				//console.log(payload);
 			//}
+
 		}
 
 		if (notification === "ConsoleOutput") {
