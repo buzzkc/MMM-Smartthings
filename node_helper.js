@@ -10,7 +10,7 @@ const smartthings = require("smartthings-node");
 let st;
 let config;
 //var device;
-var capability = 'switch';
+var capability = 'contactSensor';
 
 /*
 "capability.switch"
@@ -46,62 +46,46 @@ module.exports = NodeHelper.create({
 		if (notification === 'SEND_CONFIG') {
 			this.config = payload;
 			this.st = new smartthings.SmartThings(this.config.personalAccessToken);
+			capability = this.config.capability;
 		}
 
-		
+		//This doesn't work as I'm unable to get device passed to the promise that gets the status. The last device looped is used for all statuses
 		if (notification === "GET_DEVICES") {
-			this.st.devices.listDevicesByCapability(capability).then(deviceList => {
-					this.sendSocketNotification('DEVICES_FOUND', deviceList);
-				}
-			);
-		}
-
-		if (notification === "GET_DEVICE_STATUS") {
-			var device = payload;
-			//this.sendSocketNotification('ConsoleOutput', device.deviceId);
-
-			this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
-				var deviceStatuses = {
-					"id": device.deviceId,
-					"label": device.label,
-					"deviceTypeName": device.deviceTypeName,
-					"capability": capability,
-					"status": deviceStatus.switch.value //todo - needs to use capability variable
-				};
-
-				if (device.deviceTypeName !=="Sense Energy Device") {
-					//this.sendSocketNotification('ConsoleOutput', device.deviceId);
-					this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
-				}
-
-			}).bind(device);
-		}
-
-
-		if (notification === "GET_DEVICES_LOOP") {
 
 			this.st.devices.listDevicesByCapability(capability).then(deviceList => {
 					//this.sendSocketNotification('ConsoleOutput', deviceList);
 					for (var i = 0; i < deviceList.items.length; i++) {
 						var device = deviceList.items[i];
 						//this.sendSocketNotification('ConsoleOutput', device.deviceId);
-
-						this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
-							var deviceStatuses = {
-								"id": device.deviceId,
-								"label": device.label,
-								"deviceTypeName": device.deviceTypeName,
-								"capability": capability,
-								"status": deviceStatus.switch.value //todo - needs to use capability variable
-							};
-							//this.sendSocketNotification('ConsoleOutput', device.deviceId);
-							this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
-						}).bind(device);
-
+						this.getDeviceStatus(device, capability);
 					}
 				}
 			);
 		}
+	},
+
+	getDeviceStatus: function(device, capability) {
+		this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
+			//this.sendSocketNotification('ConsoleOutput', device);
+			var statusType = null;
+			switch (capability) {
+				case 'switch':
+					statusType = deviceStatus.switch.value;
+					break;
+				case 'contactSensor':
+					statusType = deviceStatus.contact.value;
+					break;
+			}
+			var deviceStatuses = {
+				"id": device.deviceId,
+				"label": device.label,
+				"deviceTypeName": device.deviceTypeName,
+				"capability": capability,
+				"status": statusType
+			};
+			//this.sendSocketNotification('ConsoleOutput', device.deviceId);
+			this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
+		});
 	},
 
 	// Example function send notification test
