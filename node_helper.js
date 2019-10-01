@@ -10,7 +10,7 @@ const smartthings = require("smartthings-node");
 let st;
 let config;
 //var device;
-var capability = 'contactSensor';
+var capabilities = null;
 
 /*
 "capability.switch"
@@ -46,27 +46,34 @@ module.exports = NodeHelper.create({
 		if (notification === 'SEND_CONFIG') {
 			this.config = payload;
 			this.st = new smartthings.SmartThings(this.config.personalAccessToken);
-			capability = this.config.capability;
+			capabilities = this.config.capabilities;
 		}
 
 		//This doesn't work as I'm unable to get device passed to the promise that gets the status. The last device looped is used for all statuses
 		if (notification === "GET_DEVICES") {
-
-			this.st.devices.listDevicesByCapability(capability).then(deviceList => {
-					//this.sendSocketNotification('ConsoleOutput', deviceList);
-					for (var i = 0; i < deviceList.items.length; i++) {
-						var device = deviceList.items[i];
-						//this.sendSocketNotification('ConsoleOutput', device.deviceId);
-						this.getDeviceStatus(device, capability);
-					}
-				}
-			);
+			for (var i = 0; i < capabilities.length; i++) {
+				var capability = capabilities[i];
+				this.getDevicesByCapability(capability);
+			}
 		}
+	},
+
+	getDevicesByCapability: function(capability) {
+		this.st.devices.listDevicesByCapability(capability).then(deviceList => {
+				//this.sendSocketNotification('ConsoleOutput', deviceList);
+				for (var i = 0; i < deviceList.items.length; i++) {
+					var device = deviceList.items[i];
+					//this.sendSocketNotification('ConsoleOutput', device.deviceId);
+					this.getDeviceStatus(device, capability);
+				}
+			}
+		);
 	},
 
 	getDeviceStatus: function(device, capability) {
 		this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
 			//this.sendSocketNotification('ConsoleOutput', device);
+
 			var statusType = null;
 			switch (capability) {
 				case 'switch':
@@ -75,7 +82,11 @@ module.exports = NodeHelper.create({
 				case 'contactSensor':
 					statusType = deviceStatus.contact.value;
 					break;
+				case 'lock':
+					statusType = deviceStatus.lock.value;
+					break;
 			}
+
 			var deviceStatuses = {
 				"id": device.deviceId,
 				"label": device.label,
@@ -83,6 +94,7 @@ module.exports = NodeHelper.create({
 				"capability": capability,
 				"status": statusType
 			};
+
 			//this.sendSocketNotification('ConsoleOutput', device.deviceId);
 			this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
 		});

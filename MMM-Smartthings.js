@@ -8,10 +8,13 @@
  */
 
 Module.register("MMM-Smartthings", {
+	deviceStatuses: [],
+
 	defaults: {
 		updateInterval: 60000,
 		retryDelay: 5000,
-		personalAccessToken: '' //setup personal access token at https://account.smartthings.com/tokens
+		personalAccessToken: '', //setup personal access token at https://account.smartthings.com/tokens,
+		capabilities: []
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -187,7 +190,9 @@ Module.register("MMM-Smartthings", {
 
 		if(notification === "DEVICE_STATUS_FOUND") {
 			// set dataNotification
-			console.log(payload);
+			//console.log(payload);
+			this.deviceStatuses.push(payload);
+			console.log(this.deviceStatuses);
 			//for (var i = 0; i < payload.length; i++) {
 				//console.log(payload);
 			//}
