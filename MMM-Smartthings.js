@@ -39,11 +39,7 @@ Module.register("MMM-Smartthings", {
 		this.sendConfig();
 		this.getData();
 		// Schedule update timer.
-		setInterval(function() {
-			self.updateDom();
-			self.getData();
-		}, this.config.updateInterval);
-
+		this.scheduleUpdate(2000);
 	},
 
 	sendConfig: function() {
@@ -78,8 +74,9 @@ Module.register("MMM-Smartthings", {
 		let self = this;
 		setTimeout(function() {
 			console.log("Scheduled update running");
+			self.updateDom();
 			self.getData();
-
+			self.scheduleUpdate();
 		}, nextLoad);
 	},
 
