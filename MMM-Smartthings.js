@@ -44,7 +44,6 @@ Module.register("MMM-Smartthings", {
 	},
 
 	sendConfig: function() {
-		Log.info(`[${this.name}]: SEND_CONFIG`, this.config);
 		this.sendSocketNotification('SEND_CONFIG', this.config);
 	},
 
@@ -55,7 +54,6 @@ Module.register("MMM-Smartthings", {
 	 *
 	 */
 	getData: function() {
-		Log.info(`[${this.name}]: GET_DEVICES`, null);
 		this.sendSocketNotification("GET_DEVICES", null);
 	},
 
@@ -74,7 +72,6 @@ Module.register("MMM-Smartthings", {
 		nextLoad = nextLoad ;
 		let self = this;
 		setTimeout(function() {
-			console.log("Scheduled update running");
 			self.updateDom();
 			self.getData();
 			self.scheduleUpdate();
@@ -90,7 +87,6 @@ Module.register("MMM-Smartthings", {
 
 			//retry ui update in a few seconds, data may still be loading
 			setTimeout(function() {
-				console.log("Retrying update");
 				self.updateDom();
 			}, 5000);
 
@@ -190,8 +186,6 @@ Module.register("MMM-Smartthings", {
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
 		if(notification === "DEVICE_STATUS_FOUND") {
-			// set dataNotification
-			//console.log(payload);
 			this.deviceStatuses = payload;
 		}
 

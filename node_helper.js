@@ -24,7 +24,6 @@ let deviceStatuses = [];
 	Other capabilities reference: https://docs.smartthings.com/en/latest/capabilities-reference.html
 */
 
-
 module.exports = NodeHelper.create({
 
 	socketNotificationReceived: function(notification, payload) {
@@ -34,7 +33,6 @@ module.exports = NodeHelper.create({
 			this.capabilities = this.config.capabilities;
 		}
 
-		//This doesn't work as I'm unable to get device passed to the promise that gets the status. The last device looped is used for all statuses
 		if (notification === "GET_DEVICES") {
 			if (this.capabilities) {
 				this.deviceStatuses = [];
@@ -48,10 +46,8 @@ module.exports = NodeHelper.create({
 
 	getDevicesByCapability: function(capability) {
 		this.st.devices.listDevicesByCapability(capability).then(deviceList => {
-				//this.sendSocketNotification('ConsoleOutput', deviceList);
 				for (let i = 0; i < deviceList.items.length; i++) {
 					let device = deviceList.items[i];
-					//this.sendSocketNotification('ConsoleOutput', device.deviceId);
 					this.getDeviceStatus(device, capability);
 				}
 			}, reason => {this.sendSocketNotification('ConsoleOutput', reason)}
@@ -60,7 +56,6 @@ module.exports = NodeHelper.create({
 
 	getDeviceStatus: function(device, capability) {
 		this.st.devices.getDeviceCapabilityStatus(device.deviceId, "main", capability).then(deviceStatus => {
-			//this.sendSocketNotification('ConsoleOutput', device);
 
 			let statusType = null;
 			switch (capability) {
@@ -85,7 +80,7 @@ module.exports = NodeHelper.create({
 
 			}
 
-			if (!this.isDeviceNameExcluded(device.label)) { //filter out virtual devices created for Sense
+			if (!this.isDeviceNameExcluded(device.label)) {
 				this.deviceStatuses.push({
 					"id": device.deviceId,
 					"deviceName": device.label,
@@ -94,7 +89,6 @@ module.exports = NodeHelper.create({
 					"value": statusType
 				});
 
-				//this.sendSocketNotification('ConsoleOutput', device.deviceId);
 				this.sendSocketNotification('DEVICE_STATUS_FOUND', this.deviceStatuses);
 			}
 		}, reason => {this.sendSocketNotification('ConsoleOutput', reason)});
