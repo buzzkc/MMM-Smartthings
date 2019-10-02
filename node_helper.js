@@ -10,6 +10,7 @@ const smartthings = require("smartthings-node");
 let st;
 let config;
 let capabilities = [];
+let deviceStatuses = [];
 
 /*
 	Capabilities statuses implemented:
@@ -36,6 +37,7 @@ module.exports = NodeHelper.create({
 		//This doesn't work as I'm unable to get device passed to the promise that gets the status. The last device looped is used for all statuses
 		if (notification === "GET_DEVICES") {
 			if (this.capabilities) {
+				this.deviceStatuses = [];
 				for (let i = 0; i < this.capabilities.length; i++) {
 					let capability = this.capabilities[i];
 					this.getDevicesByCapability(capability);
@@ -52,7 +54,7 @@ module.exports = NodeHelper.create({
 					//this.sendSocketNotification('ConsoleOutput', device.deviceId);
 					this.getDeviceStatus(device, capability);
 				}
-			}
+			}, reason => {this.sendSocketNotification('ConsoleOutput', reason)}
 		);
 	},
 
@@ -83,17 +85,17 @@ module.exports = NodeHelper.create({
 
 			}
 			if (!device.deviceTypeName.startsWith("Sense ")) { //filter out virtual devices created for Sense
-				let deviceStatuses = {
+				this.deviceStatuses.push({
 					"id": device.deviceId,
 					"deviceName": device.label,
 					"deviceTypeNAME": device.deviceTypeName,
 					"deviceType": capability,
 					"value": statusType
-				};
+				});
 
 				//this.sendSocketNotification('ConsoleOutput', device.deviceId);
-				this.sendSocketNotification('DEVICE_STATUS_FOUND', deviceStatuses);
+				this.sendSocketNotification('DEVICE_STATUS_FOUND', this.deviceStatuses);
 			}
-		});
+		}, reason => {this.sendSocketNotification('ConsoleOutput', reason)});
 	}
 });

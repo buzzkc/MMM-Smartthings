@@ -11,7 +11,7 @@ Module.register("MMM-Smartthings", {
 	deviceStatuses: [],
 
 	defaults: {
-		updateInterval: 10000,
+		updateInterval: 30000, //API rate limit: A maximum of 250 executions per minute is allowed for each installed SmartApp or Device Handler.
 		personalAccessToken: '', //setup personal access token at https://account.smartthings.com/tokens,
 		capabilities: [],
 		title: 'Devices'
@@ -58,7 +58,6 @@ Module.register("MMM-Smartthings", {
 	 *
 	 */
 	getData: function() {
-		this.deviceStatuses = [];
 		Log.info(`[${this.name}]: GET_DEVICES`, null);
 		this.sendSocketNotification("GET_DEVICES", null);
 	},
@@ -79,7 +78,6 @@ Module.register("MMM-Smartthings", {
 		let self = this;
 		setTimeout(function() {
 			console.log("Scheduled update running");
-			self.deviceStatuses = [];
 			self.getData();
 
 		}, nextLoad);
@@ -87,7 +85,7 @@ Module.register("MMM-Smartthings", {
 
 	getDom: function() {
 		const wrapper = document.createElement('div');
-		if (this.deviceStatuses === null) {
+		if (this.deviceStatuses === null || this.deviceStatuses.length === 0) {
 			wrapper.innerHTML =
 				'<div class="loading"><span class="zmdi zmdi-rotate-right zmdi-hc-spin"></span> Loading...</div>';
 			return wrapper;
@@ -187,13 +185,8 @@ Module.register("MMM-Smartthings", {
 	socketNotificationReceived: function (notification, payload) {
 		if(notification === "DEVICE_STATUS_FOUND") {
 			// set dataNotification
-			console.log(payload);
-			this.deviceStatuses.push(payload);
-			//console.log(this.deviceStatuses);
-			//for (var i = 0; i < payload.length; i++) {
 			//console.log(payload);
-			//}
-
+			this.deviceStatuses = payload;
 		}
 
 		//messages to display in console from node_helper and other backend processes.
