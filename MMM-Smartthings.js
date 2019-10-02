@@ -37,7 +37,7 @@ Module.register("MMM-Smartthings", {
 		//Flag for check if module is loaded
 		this.loaded = false;
 		this.sendConfig();
-		//this.getData();
+		this.getData();
 		// Schedule update timer.
 		setInterval(function() {
 			self.updateDom();
@@ -84,10 +84,18 @@ Module.register("MMM-Smartthings", {
 	},
 
 	getDom: function() {
+		let self = this;
 		const wrapper = document.createElement('div');
 		if (this.deviceStatuses === null || this.deviceStatuses.length === 0) {
 			wrapper.innerHTML =
 				'<div class="loading"><span class="zmdi zmdi-rotate-right zmdi-hc-spin"></span> Loading...</div>';
+
+			//retry ui update in a few seconds, data may still be loading
+			setTimeout(function() {
+				console.log("Retrying update");
+				self.updateDom();
+			}, 5000);
+
 			return wrapper;
 		}
 
