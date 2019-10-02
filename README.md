@@ -20,7 +20,7 @@ MagicMirror module that connects to the Smartthings api to display device status
 cd ~/MagicMirror/modules
 git clone https://github.com/buzzkc/MMM-Smartthings.git
 cd MMM-Smartthings
-npm install --production
+npm install
 ```
 
 ### Using the module
@@ -39,7 +39,11 @@ var config = {
                     'contactSensor',
                     'lock'
                 ],
-                title: "Doors & Locks"
+                title: "Doors & Locks",
+                excludedDeviceNames: [
+                    'Sense-', // Contains this text
+                    'Virtual Lock Test' // Or is a specific device label
+                ]
               }
         }
     ]
@@ -51,9 +55,10 @@ var config = {
 | Option                | Description
 |-----------------      |-----------
 | `personalAccessToken` | *Required* Setup your personal access token at https://account.smartthings.com/tokens
-| `capabilities`        | *Required* device capabilities to display statuses for. Supported capabilites: "switch", "contactSensor", "lock", "temperatureMeasurement", "relativeHumidityMeasurement", & "motionSensor"
-| `updateInterval`      | *Optional* milliseconds between updates<br>**Type:** `int`(milliseconds) <br>Default 10000 milliseconds (10 seconds)
-| `title`               | *Optional* Sub-heading title for device list
+| `capabilities`        | *Required* An array of device capabilities to display statuses for. Supported capabilites: "switch", "contactSensor", "lock", "temperatureMeasurement", "relativeHumidityMeasurement", & "motionSensor"
+| `updateInterval`      | *Optional* The number of milliseconds between updates<br>**Type:** `int`(milliseconds) <br>Default 10000 milliseconds (10 seconds)
+| `title`               | *Optional* The sub-heading title for device list
+| `excludedDeviceNames` | *Optional* An array of device names or strings contained in the device label, can be excluded by containing a given word or the full name. Be more specific if devices you want to see are getting excluded.
 
 
 
@@ -61,7 +66,7 @@ var config = {
 * Refactor to allow multiple instances of module.
 * Add additional capabilities: https://docs.smartthings.com/en/latest/capabilities-reference.html
 * Filter by location, currently all devices for all locations shown.
-* Filter out by device name.
+* ~~Filter out by device name.~~
 
 
 ## Thanks To

@@ -14,7 +14,8 @@ Module.register("MMM-Smartthings", {
 		updateInterval: 30000, //API rate limit: A maximum of 250 executions per minute is allowed for each installed SmartApp or Device Handler.
 		personalAccessToken: '', //setup personal access token at https://account.smartthings.com/tokens,
 		capabilities: [],
-		title: 'Devices'
+		title: 'Devices',
+		excludedDeviceNames: []
 	},
 
 	/*

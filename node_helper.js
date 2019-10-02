@@ -84,7 +84,8 @@ module.exports = NodeHelper.create({
 					break;
 
 			}
-			if (!device.deviceTypeName.startsWith("Sense ")) { //filter out virtual devices created for Sense
+
+			if (!this.isDeviceNameExcluded(device.label)) { //filter out virtual devices created for Sense
 				this.deviceStatuses.push({
 					"id": device.deviceId,
 					"deviceName": device.label,
@@ -97,5 +98,14 @@ module.exports = NodeHelper.create({
 				this.sendSocketNotification('DEVICE_STATUS_FOUND', this.deviceStatuses);
 			}
 		}, reason => {this.sendSocketNotification('ConsoleOutput', reason)});
+	},
+
+	isDeviceNameExcluded: function(deviceName) {
+		for (let i = 0; i < this.config.excludedDeviceNames.length; i++) {
+			if (deviceName.includes(this.config.excludedDeviceNames[i])) {
+				return true;
+			}
+		}
+		return false;
 	}
 });
