@@ -64,27 +64,6 @@ Module.register("MMM-Smartthings", {
 	},
 
 
-	/* scheduleUpdate()
-	 * Schedule next update.
-	 *
-	 * argument delay number - Milliseconds before next update.
-	 *  If empty, this.config.updateInterval is used.
-	 */
-	scheduleUpdate: function(delay) {
-		let nextLoad = this.config.updateInterval;
-		if (typeof delay !== "undefined" && delay >= 0) {
-			nextLoad = delay;
-		}
-		nextLoad = nextLoad ;
-		let self = this;
-		setTimeout(function() {
-			console.log("Scheduled update running");
-			self.deviceStatuses = [];
-			self.getData();
-
-		}, nextLoad);
-	},
-
 	getDom: function() {
 		const wrapper = document.createElement('div');
 		if (this.deviceStatuses === null) {
