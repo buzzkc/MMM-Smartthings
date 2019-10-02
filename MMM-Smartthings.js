@@ -37,7 +37,7 @@ Module.register("MMM-Smartthings", {
 		//Flag for check if module is loaded
 		this.loaded = false;
 		this.sendConfig();
-		this.getData();
+		//this.getData();
 		// Schedule update timer.
 		setInterval(function() {
 			self.updateDom();
@@ -191,7 +191,7 @@ Module.register("MMM-Smartthings", {
 			this.deviceStatuses.push(payload);
 			//console.log(this.deviceStatuses);
 			//for (var i = 0; i < payload.length; i++) {
-				//console.log(payload);
+			//console.log(payload);
 			//}
 
 		}
