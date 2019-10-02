@@ -41,7 +41,6 @@ Module.register("MMM-Smartthings", {
 		// Schedule update timer.
 		setInterval(function() {
 			self.updateDom();
-			self.deviceStatuses = [];
 			self.getData();
 		}, this.config.updateInterval);
 
@@ -59,6 +58,7 @@ Module.register("MMM-Smartthings", {
 	 *
 	 */
 	getData: function() {
+		this.deviceStatuses = [];
 		Log.info(`[${this.name}]: GET_DEVICES`, null);
 		this.sendSocketNotification("GET_DEVICES", null);
 	},
