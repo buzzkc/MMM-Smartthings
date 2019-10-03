@@ -98,7 +98,7 @@ Module.register("MMM-Smartthings", {
 
 		const deviceKeys = Object.keys(this.deviceStatuses) || [];
 		wrapper.innerHTML = `
-      <h2 class="title">${this.config.title}</h2>
+      <span class="title">${this.config.title}</span>
       <ul class="sensors">
         ${deviceKeys
 			.map(sensorKey => {
