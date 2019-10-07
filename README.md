@@ -34,7 +34,7 @@ var config = {
               position: "top_left",
               header: "Smartthings",
               config: {
-                personalAccessToken: '<your_smarthings_api_key>',
+                personalAccessToken: 'your_smarthings_api_key',
                 capabilities: [
                     'contactSensor',
                     'lock'
