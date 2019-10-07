@@ -59,7 +59,9 @@ var config = {
 | `updateInterval`      | *Optional* The number of milliseconds between updates<br>**Type:** `int`(milliseconds) <br>Default 30000 milliseconds (30 seconds)
 | `title`               | *Optional* The sub-heading title for device list
 | `excludedDeviceNames` | *Optional* An array of device names or strings contained in the device label, can be excluded by containing a given word or the full name. Be more specific if devices you want to see are getting excluded.
-
+| `tempLowValue`        | *Optional* The low threshold for temperature monitoring Default: 65 **Type:** `int`
+| `tempHighValue`       | *Optional* The high threshold for temperature monitoring Default: 80 **Type:** `int`
+| `title`               | *Optional* The sub-heading title for device list
 
 
 ## Future Enhancements

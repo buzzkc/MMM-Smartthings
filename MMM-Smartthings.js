@@ -15,7 +15,9 @@ Module.register("MMM-Smartthings", {
 		personalAccessToken: '', //setup personal access token at https://account.smartthings.com/tokens,
 		capabilities: [],
 		title: 'Devices',
-		excludedDeviceNames: []
+		excludedDeviceNames: [],
+		tempLowValue: '65',
+		tempHighValue: '80'
 	},
 
 	/*
@@ -117,7 +119,25 @@ Module.register("MMM-Smartthings", {
 				} else if (device.value === 'off') {
 					iconClass = `${iconClass} zmdi-minus-circle-outline`;
 					rowClass = `${rowClass} ok`;
+				} else if (device.deviceType === 'temperatureMeasurement') {
+					if (device.value <= this.config.tempLowValue) {
+						iconClass = `sensor-temp-low fa fa-thermometer-empty`;	
+					} else if (device.value >= this.config.tempHighValue) {
+						iconClass = `sensor-temp-high fa fa-thermometer-full`;
+					} else {
+						iconClass = `sensor-temp fa fa-thermometer-half`;
+					}
+				} else if (device.deviceType === 'relativeHumidityMeasurement') {
+					iconClass = `${iconClass} zmdi-grain`;
+				} else if (device.deviceType === 'motionSensor') {
+					if(device.value === 'active') {
+						iconClass = `sensor-motion ${iconClass} zmdi-run`;
+					} else {
+						iconClass = `${iconClass} zmdi-run`;
+					}
 				}
+				
+				
 				return `
                 <li class="sensor ${rowClass}">
                   <span class="sensor-icon ${device.deviceType}"></span>
@@ -169,6 +189,7 @@ Module.register("MMM-Smartthings", {
 
 	getStyles: function () {
 		return [
+			'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
 			'https://cdnjs.cloudflare.com/ajax/libs/material-design-iconic-font/2.2.0/css/material-design-iconic-font.min.css',
 			"MMM-Smartthings.css",
 		];

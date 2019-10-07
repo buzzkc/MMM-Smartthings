@@ -40,3 +40,19 @@
 .sensors .sensor.error .sensor-status-icon {
     color: red;
 }
+
+.sensors .sensor .sensor-temp-low  {
+    color: deepskyblue;
+}
+
+.sensors .sensor .sensor-temp-high  {
+    color: red;
+}
+
+.sensors .sensor .sensor-temp  {
+    color: green;
+}
+
+.sensors .sensor .sensor-motion  {
+    color: red;
+}
